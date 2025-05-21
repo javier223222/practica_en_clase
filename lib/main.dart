@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:practica_1/screens/card_screen.dart';
 import 'models/product.dart';
-import 'data/products.dart';
+import "services/product_service.dart";
+import '../card/card.dart';
 import 'screens/product_detail_screen.dart';
 
 void main() {
@@ -23,6 +24,7 @@ class MyApp extends StatelessWidget {
 
 class ProductListScreen extends StatelessWidget {
   const ProductListScreen({super.key});
+  
 
   @override
   Widget build(BuildContext context) {
@@ -41,33 +43,50 @@ class ProductListScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: productList.length,
-
-        itemBuilder: (context, index) {
-          final product = productList[index];
-
-          return ListTile(
-            title: Text(product.name),
-            subtitle: Text('\$${product.price.toStringAsFixed(2)}'),
-            trailing: ElevatedButton(
-              onPressed: () {
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text("Producto Comprado")));
+      body: FutureBuilder<List<Product>>(
+        future: ProductService().fetchProducts(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else {
+            final products = snapshot.data!;
+            return ListView.builder(
+              itemCount: products.length,
+              itemBuilder: (context, index) {
+                final product = products[index];
+                return ListTile(
+                  title: Text(product.title),
+                  subtitle: Text('\$${product.price.toStringAsFixed(2)}'),
+                  leading: Image.network(product.image),
+                  
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ProductDetailScreen(product: product),
+                      ),
+                    );
+                  },
+                  trailing: IconButton(
+                    icon: Icon(Icons.add_shopping_cart),
+                    onPressed: () {
+                      Cart.add(product);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text("${product.title} agregado al carrito"),
+                        ),
+                      );
+                    },
+                  ),
+                );
+                
               },
-              child: Text("Comprar"),
-            ),
-
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => ProductDetailScreen(product: product),
-                ),
-              );
-            },
-          );
+              
+            );
+            
+          }
         },
       ),
     );

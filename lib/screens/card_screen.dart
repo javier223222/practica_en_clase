@@ -13,7 +13,8 @@ class	CartScreen	extends	StatelessWidget	{
 														itemBuilder:	(context,	index)	{
 																final	product	=	items[index];
 																return	ListTile(
-																		title:	Text(product.name),
+																		title:	Text(product.title),
+                                    leading:	Image.network(product.image),
 																		subtitle:	Text('\$${product.price.toStringAsFixed(2)}'),
 																);
 														},

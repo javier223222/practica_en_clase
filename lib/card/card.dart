@@ -6,4 +6,5 @@ class Cart {
   static void remove(Product product) => _items.remove(product);
   static List<Product> get items => _items;
   static double get total => _items.fold(0, (sum, item) => sum + item.price);
+  
 }
